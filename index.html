@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق ألبان الراعي - الإدارة الشاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4338ca;
+            --primary-hover: #3730a3;
+            --success: #059669;
+            --success-hover: #047857;
+            --danger: #e11d48;
+            --danger-hover: #be123c;
+            --border: #e5e7eb;
+            --text-main: #1f2937;
+            --bg-body: #f3f4f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            background-color: var(--bg-body) !important; 
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        /* --- شاشة تسجيل الدخول المطورة --- */
+        #login-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+            overflow: hidden;
+        }
+
+        /* خلفية الأبقار والمزرعة مع حركة حيوية */
+        #login-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+            animation: zoomBg 20s infinite alternate ease-in-out;
+            z-index: -2;
+        }
+
+        /* طبقة تدرج لوني شفافة لجعل النص مقروءاً وإعطاء طابع لوني للحليب */
+        #login-wrapper::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(67, 56, 202, 0.7) 100%);
+            z-index: -1;
+        }
+
+        @keyframes zoomBg {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        /* تأثير الزجاج على بطاقة تسجيل الدخول */
+        .login-card { 
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            max-width: 400px; width: 90%; text-align: center; 
+        }
+
+        .login-card h1 {
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+
+        /* --- هيكل التطبيق --- */
+        #app-wrapper {
+            display: none;
+            padding: 15px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-logout {
+            background-color: var(--danger) !important;
+            color: white; border: none; padding: 8px 15px; border-radius: 8px;
+            font-family: 'Tajawal'; font-weight: bold; cursor: pointer;
+        }
+
+        /* اللوحة العلوية */
+        .top-dashboard {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .dash-item h3 { margin: 0 0 10px 0; font-size: 16px; color: #6b7280; }
+        .dash-item span { font-size: 26px; font-weight: bold; font-family: monospace; }
+        .dash-sales { color: var(--success); }
+        .dash-debt { color: var(--danger); }
+
+        /* نظام الشاشات */
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg) !important;
+            padding: 25px; border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        /* الأزرار */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn {
+            padding: 15px 10px; font-size: 16px; font-weight: bold;
+            font-family: 'Tajawal', sans-serif; color: #ffffff !important;
+            background-color: var(--primary) !important; 
+            border: none; border-radius: 10px; cursor: pointer; text-align: center;
+            transition: all 0.3s ease; width: 100%; box-sizing: border-box;
+        }
+        .btn:hover { background-color: var(--primary-hover) !important; transform: translateY(-2px); }
+        .btn-success { background-color: var(--success) !important; }
+        .btn-success:hover { background-color: var(--success-hover) !important; }
+        .btn-danger { background-color: var(--danger) !important; padding: 6px 12px; font-size: 14px;}
+        .btn-danger:hover { background-color: var(--danger-hover) !important; }
+        .btn-back { background-color: #f9fafb !important; color: #4b5563 !important; border: 1px solid #d1d5db; margin-bottom: 20px;}
+
+        .menu-grid .btn { padding: 20px; font-size: 18px; }
+
+        .input-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .input-box { flex: 1 1 200px; display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 8px; font-size: 14px; color: var(--text-main); }
+        input, select {
+            padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;
+            font-size: 16px; background: #f9fafb !important; color: var(--text-main);
+            font-family: Arial, sans-serif; box-sizing: border-box; transition: all 0.3s;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15); background: #ffffff !important; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: transparent !important; }
+        th, td { border: 1px solid var(--border); padding: 14px 10px; text-align: center; font-family: Arial, sans-serif; }
+        th { font-weight: bold; color: var(--primary); background-color: #f3f4f6; }
+        tr:nth-child(even) { background-color: #fbfbfc; }
+
+        .result-box {
+            font-size: 16px; font-weight: bold; margin-top: 20px; padding: 20px;
+            background-color: #f0fdf4; border: 2px dashed var(--success); 
+            border-radius: 12px; text-align: center; color: var(--text-main);
+        }
+        .currency { font-family: Arial, sans-serif; color: var(--success); font-weight: bold; }
+        .hint-text { font-size: 12px; color: #6b7280; margin-top: 4px; display: block; }
+        .auto-save-hint { text-align: center; color: var(--success); font-size: 14px; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-wrapper">
+        <div class="login-card">
+            <!-- تمت إضافة رموز الأبقار واللبن للحيوية -->
+            <h1 style="margin-bottom: 5px; color: var(--primary);">🐄 ألبان الراعي 🥛</h1>
+            <p style="color: #4b5563; font-weight: bold; margin-bottom: 25px;">نظام الإدارة الشاملة</p>
+            
+            <div style="text-align: right; margin-bottom: 20px;">
+                <label style="color: #374151;">كلمة المرور:</label>
+                <input type="password" id="app_password" placeholder="أدخل كلمة المرور..." style="width: 100%; text-align: center; font-size: 20px; letter-spacing: 2px; background: rgba(255,255,255,0.9) !important; border: 1px solid #cbd5e1;">
+            </div>
+            
+            <button class="btn btn-success" onclick="checkPassword()" style="font-size: 18px; box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);">دخول للنظام</button>
+            <p id="login_error" style="color: var(--danger); display: none; margin-top: 15px; font-weight: bold; background: rgba(255,255,255,0.8); padding: 5px; border-radius: 5px;">كلمة المرور غير صحيحة!</p>
+        </div>
+    </div>
+
+    <div id="app-wrapper">
+        <div class="header-bar">
+            <h2 style="margin: 0;">نظام الراعي</h2>
+            <button class="btn-logout" onclick="logout()">تسجيل خروج</button>
+        </div>
+
+        <div class="top-dashboard">
+            <div class="dash-item">
+                <h3>إجمالي المبيعات (كرتونة)</h3>
+                <span id="dashTotalSales" class="dash-sales">0</span>
+            </div>
+            <div class="dash-item" style="border-right: 1px solid var(--border); padding-right: 15px;">
+                <h3>إجمالي الديون</h3>
+                <span id="dashTotalDebt" class="dash-debt">0.00</span> <span class="currency">₪</span>
+            </div>
+        </div>
+
+        <div id="screen-menu" class="screen active">
+            <div class="menu-grid">
+                <button class="btn" onclick="openScreen('screen-calc')">1. مقادير الإنتاج (جرام/مل)</button>
+                <button class="btn" onclick="openScreen('screen-cost')">2. حساب التكاليف (₪)</button>
+                <button class="btn" onclick="openScreen('screen-profit')">3. التسعير والربح</button>
+                <button class="btn" onclick="openScreen('screen-sales')">4. دفتر المبيعات</button>
+                <button class="btn" style="grid-column: span 2;" onclick="openScreen('screen-customers')">5. الذمم المالية للعملاء</button>
+            </div>
+        </div>
+
+        <div id="screen-calc" class="screen card">
+            <button class="btn btn-back" onclick="openScreen('screen-menu')">العودة للقائمة</button>
+            <h2>حساب المقادير الدقيقة</h2>
+            <p style="text-align:center; font-size:14px; color:#666;">(الأساس المعتمد: 1000 جرام - قوام متوسط)</p>
+            <div class="input-box" style="margin-bottom: 15px;">
+                <label>الكمية المراد إنتاجها (بالجرام):</label>
+                <input type="number" id="targetWeightGrams" placeholder="مثال: 5000 (لـ 5 كيلو)">
+            </div>
+            <button class="btn btn-success" onclick="calculateQuantities()">احسب المقادير</button>
+            <div style="overflow-x: auto;">
+                <table id="recipeTable" style="display:none;">
+                    <thead><tr><th>المكون</th><th>الكمية المطلوبة</th></tr></thead>
+                    <tbody id="recipeBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="screen-cost" class="screen card">
+            <button class="btn btn-back" onclick="openScreen('screen-menu')">العودة للقائمة</button>
+            <h2>حساب التكلفة الشاملة</h2>
+            <p style="text-align:center; font-size:14px; color:#6b7280;">أدخل الأسعار وسيقوم النظام <strong style="color:var(--success);">بحفظها تلقائياً</strong>.</p>
+            
+            <div class="input-group" id="prices-inputs">
+                <div class="input-box"><label>سعر كيلو اللبن البودرة:</label><input type="number" id="p_milk" value="0"></div>
+                <div class="input-box"><label>سعر كيلو السكر:</label><input type="number" id="p_sugar" value="0"></div>
+                <div class="input-box"><label>سعر كيلو النشا:</label><input type="number" id="p_starch" value="0"></div>
+                <div class="input-box"><label>سعر كيلو البادئ:</label><input type="number" id="p_starter" value="0"></div>
+                <div class="input-box"><label>سعر كيلو ملح الليمون:</label><input type="number" id="p_citric" value="0"></div>
+                <div class="input-box"><label>سعر كيلو السوربات:</label><input type="number" id="p_sorbate" value="0"></div>
+                <div class="input-box" style="background-color: #fdf2f8; padding: 10px; border-radius: 8px;"><label>سعر لتر نكهة الفراولة:</label><input type="number" id="p_f_straw" value="0"></div>
+                <div class="input-box" style="background-color: #f0fdf4; padding: 10px; border-radius: 8px;"><label>سعر لتر نكهة اللبن:</label><input type="number" id="p_f_yogurt" value="0"></div>
+                <div class="input-box"><label>سعر العبوة الفارغة:</label><input type="number" id="p_container" value="0"></div>
+                <div class="input-box"><label>سعر الملصق (الاستيكر):</label><input type="number" id="p_label" value="0"></div>
+                <div class="input-box"><label>سعر الكرتونة الفارغة:</label><input type="number" id="p_carton" value="0"></div>
+            </div>
+            <div id="saveIndicator" class="auto-save-hint" style="display: none;">تم الحفظ التلقائي ✓</div>
+        </div>
+
+        <div id="screen-profit" class="screen card">
+            <button class="btn btn-back" onclick="openScreen('screen-menu')">العودة للقائمة</button>
+            <h2>التسعير ودراسة الجدوى</h2>
+            
+            <div class="input-group">
+                <div class="input-box">
+                    <label>الكمية التي سأنتجها (بالكيلو):</label>
+                    <input type="number" id="prod_kg" value="10" oninput="updateLiveProduction()">
+                </div>
+                
+                <div class="input-box">
+                    <label>سعر التكلفة للكيلو ₪:</label>
+                    <input type="number" id="manual_cost_kg" value="0">
+                    <span style="font-size: 13px; color: var(--primary); cursor: pointer; margin-top: 6px; font-weight: bold;" onclick="document.getElementById('manual_cost_kg').value = (getCostPerGramOfMix() * 1000).toFixed(2);">🔄 استيراد التكلفة التلقائية من المكونات</span>
+                </div>
+
+                <div class="input-box">
+                    <label>حجم العبوة (بالجرام):</label>
+                    <select id="prod_size" onchange="updateLiveProduction()">
+                        <option value="150">150 جرام</option>
+                        <option value="200">200 جرام</option>
+                        <option value="250">250 جرام</option>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <label>عدد العبوات في الكرتونة:</label>
+                    <input type="number" id="carton_capacity" value="12" oninput="updateLiveProduction(); syncPrices('capacity');">
+                </div>
+
+                <div style="width: 100%; background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; font-weight: bold; text-align: center; border: 1px dashed #38bdf8; margin: 5px 0 15px 0;" id="live_production_info">
+                    الإنتاج المتوقع: أدخل الكمية للحساب...
+                </div>
+
+                <div class="input-box">
+                    <label>سعر بيع العبوة (للحبة) ₪:</label>
+                    <input type="number" id="sell_unit" value="0" oninput="syncPrices('unit')">
+                </div>
+                <div class="input-box">
+                    <label>سعر بيع الكرتونة ₪:</label>
+                    <input type="number" id="sell_carton" value="0" oninput="syncPrices('carton')">
+                </div>
+            </div>
+            
+            <button class="btn btn-success" onclick="calculateFeasibility()">تحليل الإنتاج والأرباح النهائي</button>
+            <div id="feasibilityResults" class="result-box" style="display:none;"></div>
+        </div>
+
+        <div id="screen-sales" class="screen card">
+            <button class="btn btn-back" onclick="openScreen('screen-menu')">العودة للقائمة</button>
+            <h2>دفتر المبيعات والفواتير</h2>
+            <div class="input-group">
+                <div class="input-box"><label>اسم العميل:</label><input type="text" id="s_client"></div>
+                <div class="input-box"><label>رقم الجوال:</label><input type="number" id="s_phone" dir="ltr" placeholder="05XXXXXXXX"></div>
+                <div class="input-box"><label>الكمية (بالكرتونة):</label><input type="number" id="s_qty_carton" value="0" oninput="calculateTotalInvoice()"></div>
+                <div class="input-box"><label>سعر الكرتونة ₪:</label><input type="number" id="s_carton_price" value="0" oninput="calculateTotalInvoice()"></div>
+                <div class="input-box"><label>إجمالي الفاتورة ₪:</label><input type="number" id="s_total_price" value="0" readonly style="background-color: #e5e7eb; cursor: not-allowed; border-color: var(--success); color: var(--success); font-weight: bold;"></div>
+                
+                <div class="input-box">
+                    <label>طريقة الدفع:</label>
+                    <select id="s_method">
+                        <option value="نقدي">نقدي</option>
+                        <option value="دين (آجل)">دين (آجل)</option>
+                        <option value="تطبيق بنكي">تطبيق بنكي</option>
+                        <option value="محفظة">محفظة إلكترونية</option>
+                    </select>
+                </div>
+                <div class="input-box" id="due_date_box">
+                    <label>تاريخ السداد:</label>
+                    <input type="text" id="s_due_date" placeholder="أدخل التاريخ أو عدد الأيام">
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="addSaleRecord()">تسجيل الحركة</button>
+            
+            <div style="overflow-x: auto; margin-top:15px;">
+                <table>
+                    <thead><tr>
+                        <th>التاريخ</th>
+                        <th>العميل</th>
+                        <th>البيانات</th>
+                        <th>الإجمالي ₪</th>
+                        <th>الدفع</th>
+                        <th>إجراء</th>
+                    </tr></thead>
+                    <tbody id="salesBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="screen-customers" class="screen card">
+            <button class="btn btn-back" onclick="openScreen('screen-menu')">العودة للقائمة</button>
+            <h2>الذمم المالية للعملاء</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>العميل</th>
+                            <th>الدين (₪)</th>
+                            <th>تاريخ السداد</th>
+                            <th>سداد دفعة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            sessionStorage.removeItem('isLoggedIn');
+            document.getElementById('login-wrapper').style.display = 'flex';
+            document.getElementById('app-wrapper').style.display = 'none';
+        };
+
+        function checkPassword() {
+            let pass = document.getElementById('app_password').value;
+            if(pass === '0594568322' || pass === '1832000') {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                document.getElementById('login-wrapper').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('login-wrapper').style.display = 'none';
+                    document.getElementById('app-wrapper').style.display = 'block';
+                    loadApp();
+                }, 400);
+            } else {
+                document.getElementById('login_error').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            document.getElementById('app_password').value = '';
+            document.getElementById('login_error').style.display = 'none';
+            document.getElementById('app-wrapper').style.display = 'none';
+            let loginWrapper = document.getElementById('login-wrapper');
+            loginWrapper.style.display = 'flex';
+            setTimeout(() => loginWrapper.style.opacity = '1', 10);
+        }
+
+        let salesData = [];
+        let customersData = {};
+        let pricesData = {};
+
+        function loadApp() {
+            salesData = JSON.parse(localStorage.getItem('sales_db')) || [];
+            customersData = JSON.parse(localStorage.getItem('customers_db')) || {};
+            pricesData = JSON.parse(localStorage.getItem('prices_db')) || {
+                milk: 0, sugar: 0, starch: 0, starter: 0, citric: 0, sorbate: 0, 
+                f_straw: 0, f_yogurt: 0, container: 0, label: 0, carton: 0
+            };
+            loadPrices();
+            renderSales();
+            updateDashboard();
+            setupAutoSave();
+            updateLiveProduction();
+        }
+
+        let saveTimeout;
+        function setupAutoSave() {
+            const inputs = document.querySelectorAll('#prices-inputs input');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    pricesData = {
+                        milk: parseFloat(document.getElementById('p_milk').value)||0,
+                        sugar: parseFloat(document.getElementById('p_sugar').value)||0,
+                        starch: parseFloat(document.getElementById('p_starch').value)||0,
+                        starter: parseFloat(document.getElementById('p_starter').value)||0,
+                        citric: parseFloat(document.getElementById('p_citric').value)||0,
+                        sorbate: parseFloat(document.getElementById('p_sorbate').value)||0,
+                        f_straw: parseFloat(document.getElementById('p_f_straw').value)||0,
+                        f_yogurt: parseFloat(document.getElementById('p_f_yogurt').value)||0,
+                        container: parseFloat(document.getElementById('p_container').value)||0,
+                        label: parseFloat(document.getElementById('p_label').value)||0,
+                        carton: parseFloat(document.getElementById('p_carton').value)||0
+                    };
+                    localStorage.setItem('prices_db', JSON.stringify(pricesData));
+                    
+                    let indicator = document.getElementById('saveIndicator');
+                    indicator.style.display = 'block';
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(() => { indicator.style.display = 'none'; }, 2000);
+                });
+            });
+        }
+
+        function updateLiveProduction() {
+            let kg = parseFloat(document.getElementById('prod_kg').value) || 0;
+            let size = parseFloat(document.getElementById('prod_size').value) || 1;
+            let capacity = parseFloat(document.getElementById('carton_capacity').value) || 1;
+            
+            if (kg > 0) {
+                let totalGrams = kg * 1000;
+                let totalUnits = Math.floor(totalGrams / size);
+                let cartons = Math.floor(totalUnits / capacity);
+                let looseUnits = totalUnits % capacity;
+                
+                document.getElementById('live_production_info').innerHTML = 
+                    `الإنتاج المتوقع: <span style="font-size:20px;">${totalUnits}</span> عبوة (= ${cartons} كرتونة + ${looseUnits} حبة)`;
+            } else {
+                document.getElementById('live_production_info').innerHTML = "الإنتاج المتوقع: 0 عبوة";
+            }
+        }
+
+        function syncPrices(source) {
+            let capacity = parseFloat(document.getElementById('carton_capacity').value) || 1;
+            let unitInput = document.getElementById('sell_unit');
+            let cartonInput = document.getElementById('sell_carton');
+            
+            if (source === 'unit') {
+                let unitPrice = parseFloat(unitInput.value) || 0;
+                cartonInput.value = (unitPrice * capacity).toFixed(2);
+            } 
+            else if (source === 'carton') {
+                let cartonPrice = parseFloat(cartonInput.value) || 0;
+                unitInput.value = (cartonPrice / capacity).toFixed(2);
+            } 
+            else if (source === 'capacity') {
+                let unitPrice = parseFloat(unitInput.value) || 0;
+                cartonInput.value = (unitPrice * capacity).toFixed(2);
+            }
+        }
+
+        const BASE_MIX_GRAMS = 1000; 
+        const RECIPE = {
+            water_yogurt: 525, milk: 195, starch: 23, starter: 15,       
+            water_syrup: 140, sugar: 100, citric: 0.5, sorbate: 1,        
+            f_straw_min: 2, f_straw_max: 3, f_yogurt_min: 1, f_yogurt_max: 1.5
+        };
+
+        function openScreen(id) {
+            document.querySelectorAll('#app-wrapper .screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            updateDashboard();
+            if(id === 'screen-customers') renderCustomers();
+        }
+
+        function updateDashboard() {
+            let totalCartons = salesData.reduce((sum, sale) => sum + parseFloat(sale.qty), 0);
+            let totalDebt = Object.values(customersData).reduce((sum, cust) => sum + cust.debt, 0);
+            document.getElementById('dashTotalSales').innerText = totalCartons.toFixed(1);
+            document.getElementById('dashTotalDebt').innerText = totalDebt.toFixed(2);
+        }
+
+        function calculateQuantities() {
+            let targetGrams = parseFloat(document.getElementById('targetWeightGrams').value);
+            if (!targetGrams || targetGrams <= 0) return alert("أدخل وزن صحيح!");
+            let factor = targetGrams / BASE_MIX_GRAMS;
+            let tbody = document.getElementById('recipeBody');
+            
+            tbody.innerHTML = `
+                <tr><td>ماء الزبادي</td><td>${(RECIPE.water_yogurt * factor).toFixed(0)} ml</td></tr>
+                <tr><td>لبن بودرة</td><td>${(RECIPE.milk * factor).toFixed(1)} g</td></tr>
+                <tr><td>نشا ذرة</td><td>${(RECIPE.starch * factor).toFixed(1)} g</td></tr>
+                <tr><td>بادئ زبادي</td><td>${(RECIPE.starter * factor).toFixed(1)} g</td></tr>
+                <tr><td>ماء السيرب</td><td>${(RECIPE.water_syrup * factor).toFixed(0)} ml</td></tr>
+                <tr><td>ســـكر</td><td>${(RECIPE.sugar * factor).toFixed(1)} g</td></tr>
+                <tr><td>ملح ليمون</td><td>${(RECIPE.citric * factor).toFixed(2)} g</td></tr>
+                <tr><td>سوربات (حافظة)</td><td>${(RECIPE.sorbate * factor).toFixed(2)} g</td></tr>
+                <tr style="background-color:#fce7f3;"><td>اللون</td><td>حسب الرغبة</td></tr>
+                <tr style="background-color:#fce7f3;"><td>نكهة الفراولة</td><td>${(RECIPE.f_straw_min * factor).toFixed(1)} - ${(RECIPE.f_straw_max * factor).toFixed(1)} ml</td></tr>
+                <tr style="background-color:#f0fdf4;"><td>نكهة اللبن</td><td>${(RECIPE.f_yogurt_min * factor).toFixed(1)} - ${(RECIPE.f_yogurt_max * factor).toFixed(1)} ml</td></tr>
+            `;
+            document.getElementById('recipeTable').style.display = "table";
+        }
+
+        function loadPrices() {
+            document.getElementById('p_milk').value = pricesData.milk || 0;
+            document.getElementById('p_sugar').value = pricesData.sugar || 0;
+            document.getElementById('p_starch').value = pricesData.starch || 0;
+            document.getElementById('p_starter').value = pricesData.starter || 0;
+            document.getElementById('p_citric').value = pricesData.citric || 0;
+            document.getElementById('p_sorbate').value = pricesData.sorbate || 0;
+            document.getElementById('p_f_straw').value = pricesData.f_straw || 0;
+            document.getElementById('p_f_yogurt').value = pricesData.f_yogurt || 0;
+            document.getElementById('p_container').value = pricesData.container || 0;
+            document.getElementById('p_label').value = pricesData.label || 0;
+            document.getElementById('p_carton').value = pricesData.carton || 0;
+        }
+
+        function getCostPerGramOfMix() {
+            let strawCostPerMix = (2.5) * ((pricesData.f_straw || 0) / 1000);
+            let yogurtCostPerMix = (1.25) * ((pricesData.f_yogurt || 0) / 1000);
+
+            let totalBaseCost = 
+                (RECIPE.milk/1000 * pricesData.milk) + (RECIPE.sugar/1000 * pricesData.sugar) +
+                (RECIPE.starch/1000 * pricesData.starch) + (RECIPE.starter/1000 * pricesData.starter) +
+                (RECIPE.citric/1000 * pricesData.citric) + (RECIPE.sorbate/1000 * pricesData.sorbate) +
+                strawCostPerMix + yogurtCostPerMix;
+                
+            return totalBaseCost / BASE_MIX_GRAMS; 
+        }
+
+        function calculateFeasibility() {
+            let kg = parseFloat(document.getElementById('prod_kg').value);
+            let size = parseFloat(document.getElementById('prod_size').value);
+            let capacity = parseFloat(document.getElementById('carton_capacity').value);
+            let p_unit = parseFloat(document.getElementById('sell_unit').value);
+            let p_carton = parseFloat(document.getElementById('sell_carton').value);
+            
+            let manualCostKg = parseFloat(document.getElementById('manual_cost_kg').value) || 0;
+
+            if(!kg || !size || !capacity) return alert("أكمل البيانات الرئيسية!");
+
+            let totalGrams = kg * 1000;
+            let totalUnits = Math.floor(totalGrams / size);
+            let cartons = Math.floor(totalUnits / capacity);
+            let looseUnits = totalUnits % capacity;
+
+            let costPerGram = manualCostKg / 1000;
+            let totalCost = (totalGrams * costPerGram) + (totalUnits * (pricesData.container + pricesData.label)) + (cartons * pricesData.carton);
+            let totalRevenue = (cartons * p_carton) + (looseUnits * p_unit);
+
+            let res = document.getElementById('feasibilityResults');
+            res.innerHTML = `
+                سيعطيك: <strong>${totalUnits} عبوة</strong> (=${cartons} كرتونة + ${looseUnits} حبة)<br>
+                <hr style="border:1px solid var(--border); margin:15px 0;">
+                التكلفة: <strong style="color:var(--danger);">${totalCost.toFixed(2)} ₪</strong><br>
+                المبيعات: <strong style="color:var(--primary);">${totalRevenue.toFixed(2)} ₪</strong><br>
+                <div style="margin-top:15px; font-size:22px; color:var(--success);">الربح: ${(totalRevenue - totalCost).toFixed(2)} ₪</div>
+            `;
+            res.style.display = "block";
+        }
+
+        function calculateTotalInvoice() {
+            let qty = parseFloat(document.getElementById('s_qty_carton').value) || 0;
+            let price = parseFloat(document.getElementById('s_carton_price').value) || 0;
+            document.getElementById('s_total_price').value = (qty * price).toFixed(2);
+        }
+
+        function addSaleRecord() {
+            let client = document.getElementById('s_client').value.trim();
+            let total = parseFloat(document.getElementById('s_total_price').value) || 0;
+            let method = document.getElementById('s_method').value;
+
+            if (!client || total <= 0) return alert("أدخل اسم العميل وإجمالي الفاتورة!");
+
+            let saleObj = { 
+                id: Date.now(), 
+                datetime: new Date().toLocaleString('ar-EG'),
+                client: client,
+                phone: document.getElementById('s_phone').value.trim(),
+                qty: parseFloat(document.getElementById('s_qty_carton').value) || 0,
+                cartonPrice: parseFloat(document.getElementById('s_carton_price').value) || 0,
+                total: total,
+                method: method,
+                dueDate: document.getElementById('s_due_date').value.trim() || '-'
+            };
+
+            salesData.push(saleObj);
+            localStorage.setItem('sales_db', JSON.stringify(salesData));
+
+            if (method.includes('دين')) {
+                if (!customersData[client]) customersData[client] = { debt: 0, phone: saleObj.phone, dueDate: saleObj.dueDate };
+                customersData[client].debt += total;
+                customersData[client].phone = saleObj.phone; 
+                customersData[client].dueDate = saleObj.dueDate; 
+                localStorage.setItem('customers_db', JSON.stringify(customersData));
+            }
+
+            document.querySelectorAll('#screen-sales input:not(.btn)').forEach(i => i.value = '');
+            document.getElementById('s_qty_carton').value = '0';
+            document.getElementById('s_carton_price').value = '0';
+            document.getElementById('s_total_price').value = '0';
+            
+            renderSales(); updateDashboard();
+        }
+
+        function deleteSale(id) {
+            if(!confirm("هل أنت متأكد من حذف هذه الحركة؟ سيتم تعديل الديون تلقائياً إذا لزم الأمر.")) return;
+            
+            let idx = salesData.findIndex(s => s.id === id);
+            if(idx === -1) return;
+            
+            let sale = salesData[idx];
+            
+            if (sale.method.includes('دين') && customersData[sale.client]) {
+                customersData[sale.client].debt -= sale.total;
+                if(customersData[sale.client].debt <= 0) customersData[sale.client].debt = 0;
+            } else if (sale.method === 'سداد نقدي' && sale.client.includes('دفعة سداد - ')) {
+                let realClient = sale.client.replace('دفعة سداد - ', '');
+                if(customersData[realClient]) {
+                    customersData[realClient].debt += sale.total;
+                }
+            }
+
+            salesData.splice(idx, 1);
+            localStorage.setItem('sales_db', JSON.stringify(salesData));
+            localStorage.setItem('customers_db', JSON.stringify(customersData));
+            
+            renderSales();
+            updateDashboard();
+            if(document.getElementById('screen-customers').classList.contains('active')) {
+                renderCustomers();
+            }
+        }
+
+        function renderSales() {
+            let tbody = document.getElementById('salesBody');
+            tbody.innerHTML = "";
+            salesData.slice().reverse().forEach(sale => {
+                let color = sale.method.includes('دين') ? 'color:var(--danger);' : 'color:var(--success);';
+                tbody.innerHTML += `<tr>
+                    <td style="font-size:12px;">${sale.datetime}</td>
+                    <td><strong>${sale.client}</strong></td>
+                    <td>${sale.qty} كرتونة<span class="hint-text">سعر: ${sale.cartonPrice}₪</span></td>
+                    <td style="font-weight:bold; font-size:16px;">${sale.total.toFixed(2)}</td>
+                    <td style="${color}"><strong>${sale.method}</strong></td>
+                    <td><button class="btn btn-danger" onclick="deleteSale(${sale.id})">🗑️ حذف</button></td>
+                </tr>`;
+            });
+        }
+
+        function renderCustomers() {
+            let tbody = document.getElementById('customersBody');
+            tbody.innerHTML = "";
+            let hasDebts = false;
+
+            for (const [name, data] of Object.entries(customersData)) {
+                if (data.debt > 0) {
+                    hasDebts = true;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${name}</strong><br><span style="font-size:12px;color:#666;">${data.phone||''}</span></td>
+                            <td style="color: var(--danger); font-weight: bold; font-size:18px;">${data.debt.toFixed(2)}</td>
+                            <td style="font-size:14px;">${data.dueDate||'-'}</td>
+                            <td>
+                                <input type="number" id="pay_${name}" style="width:70px; padding:6px; margin-bottom:5px;" placeholder="المبلغ">
+                                <button class="btn btn-success" style="padding:6px; font-size:12px;" onclick="payDebt('${name}')">سداد</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+            if(!hasDebts) tbody.innerHTML = "<tr><td colspan='4'>لا يوجد ديون.</td></tr>";
+        }
+
+        function payDebt(clientName) {
+            let amount = parseFloat(document.getElementById(`pay_${clientName}`).value);
+            if (!amount || amount <= 0 || amount > customersData[clientName].debt) return alert("أدخل مبلغاً صحيحاً!");
+
+            customersData[clientName].debt -= amount;
+            localStorage.setItem('customers_db', JSON.stringify(customersData));
+
+            salesData.push({
+                id: Date.now(),
+                datetime: new Date().toLocaleString('ar-EG'),
+                client: `دفعة سداد - ${clientName}`,
+                phone: customersData[clientName].phone,
+                qty: 0, cartonPrice: 0, total: amount,
+                method: 'سداد نقدي', dueDate: '-'
+            });
+            localStorage.setItem('sales_db', JSON.stringify(salesData));
+
+            renderCustomers(); renderSales(); updateDashboard();
+        }
+    </script>
+</body>
+</html>
